@@ -1,9 +1,11 @@
-import { deleteCode } from "../utils/api";
+import { deleteCode, getAllPreviewImages, getPreviewImage } from "../utils/api";
 import eventEmitter from "../utils/event-emitter";
 
 class Dashboard {
   constructor(el) {
     this.el = el;
+
+    this.images = getAllPreviewImages();
   }
 
   componentMounted() {
@@ -18,10 +20,15 @@ class Dashboard {
         if (confirmDelete) {
           // eventEmitter.emit("code-delete", id);
           deleteCode(id);
-          t.parentNode.remove();
+          t.parentNode.parentNode.remove();
         }
-      } else if (t.classList.contains("card")) {
-        let id = t.dataset.id;
+      } else if (
+        t.classList.contains("preview-img") ||
+        t.classList.contains("codepen-details")
+      ) {
+        console.log("hello: ");
+
+        let id = t.parentNode.dataset.id;
         onNavigate(`/code/${id}`, true);
       }
     });
@@ -37,9 +44,19 @@ class Dashboard {
                   (f) =>
                     `
                     <div class="card" data-id="${f.id}">
-                      <div class="hanger"></div>
+                      ${
+                        this.images[f.id]
+                          ? `<img class="preview-img" src="${
+                              this.images[f.id]
+                            }" alt="preview_img" />`
+                          : ""
+                      }
+                      <div class="codepen-details">
                       <h2>${f.pageTitle}</h2>
-                      <button class="btn-delete" data-id="${f.id}">&#10060;</button>
+                      <button class="btn-delete" data-id="${
+                        f.id
+                      }">&#10060;</button>
+                      </div>
                     </div>
                     `
                 )

@@ -1,4 +1,4 @@
-import { getCodeById } from "../utils/api";
+import { getCodeById, savePreviewImage } from "../utils/api";
 import { debounce } from "../utils/common";
 import eventEmitter from "../utils/event-emitter";
 
@@ -7,6 +7,7 @@ class CodePage {
     this.el = el;
     this.pageTitle = "";
     this.id = undefined;
+    this.previewImage = undefined;
 
     eventEmitter.on("save-code", (r) => {
       console.log("saving", r);
@@ -54,9 +55,9 @@ class CodePage {
       code.js = this.jsEditor.getValue();
 
       console.log("updating the code");
-
       eventEmitter.emit("update-code", code);
     }
+    savePreviewImage(this.id, this.previewImage);
   }
 
   executeCode() {
@@ -85,6 +86,13 @@ class CodePage {
     iframeDocument.open();
     iframeDocument.write(content);
     iframeDocument.close();
+
+    html2canvas(iframeDocument.body).then((canvas) => {
+      canvas.style.width = canvas.width / 2; // show at 50% on screen
+      canvas.style.height = canvas.height / 2;
+      const dataURL = canvas.toDataURL("image/png");
+      this.previewImage = dataURL;
+    });
   }
 
   componentMounted() {
